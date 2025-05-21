@@ -6,6 +6,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <complex>
 
 namespace SDWindow
 {
@@ -16,6 +17,7 @@ namespace SDWindow
         BS_Populated,
         BS_Positive,
         BS_Folded,
+        BS_DeMeaned,
     };
 
     /* init */
@@ -25,10 +27,14 @@ namespace SDWindow
     static float period{ 1.f };
     static float trailPeriod{ 1.f };
 
+    static float maxRnd{ 20.f };
+    static float minRnd{ -20.f };
+
     /* state */
     static BufferState bufferState{ BS_Empty };
     static float shift{ 0.f };
     static std::vector<int> foldedHistogram(numBins, 0);
+    static std::vector<int> deMeanedHistogram(numBins, 0);
 
     /* buffers */
     static std::vector<float> source(bufferSize, 0.f);
@@ -39,10 +45,13 @@ namespace SDFunctions
 {
     /* function declarations */
     void PopulateBuffer(std::vector<float>& buffer, float samplerate, float period, bool printContents = false);
+    void PopulateBufferRnd(std::vector<float>& buffer);
+
     void ClearBuffers(std::vector<float>& buffer, std::vector<float>& foldedBuffer);
     bool ShiftPositive(std::vector<float>& buffer, float& shift, bool printContents = false);
     void FoldBuffer(std::vector<float>& buffer, std::vector<float>& foldedBuffer, float trailPeriod, bool printContents = false);
     void FillFoldedHistogram(std::vector<float>& foldedBuffer, std::vector<int>& foldedHistogram, float trailPeriod);
+    void DeMeanFoldedHistogram(std::vector<int>& foldedHistogram, std::vector<int>& deMeanedHistogram);
 }
 
 static void ShowSignalDetectionWindow()
@@ -52,27 +61,33 @@ static void ShowSignalDetectionWindow()
 
     bool disable{ false };
 
-    ImGui::Begin("Periodic signal detection");
+    ImGui::Begin("Periodic signal detection - Manual");
 
     /* Processing buttons */
+
+    /* Populate */
     disable = BS_Empty > bufferState;
     if(disable) ImGui::BeginDisabled();
-    if (ImGui::Button("Populate buffer"))
+    if (ImGui::Button("populate buffer"))
     {
-        PopulateBuffer(source, samplerate, period);
+        //PopulateBuffer(source, samplerate, period);
+        PopulateBufferRnd(source);
         bufferState = BS_Populated;
     }
+
+    /* Clear */
     ImGui::SameLine();
-    if (ImGui::Button("Clear buffers"))
+    if (ImGui::Button("clear buffers"))
     {
         ClearBuffers(source, folded);
         bufferState = BS_Empty;
     }
     if(disable) ImGui::EndDisabled();
 
+    /* Clear */
     disable = BS_Populated > bufferState;
     if (disable) ImGui::BeginDisabled();
-    if (ImGui::Button("Shift+"))
+    if (ImGui::Button("shift+"))
     {
         if (ShiftPositive(source, shift))
         {
@@ -81,11 +96,11 @@ static void ShowSignalDetectionWindow()
     }
     if (disable) ImGui::EndDisabled();
 
+    /* Folding */
     ImGui::SameLine();
-
     disable = BS_Positive > bufferState;
     if (disable) ImGui::BeginDisabled();
-    if (ImGui::Button("Fold"))
+    if (ImGui::Button("fold"))
     {
         FoldBuffer(source, folded, trailPeriod);
         FillFoldedHistogram(folded, foldedHistogram, trailPeriod);
@@ -93,11 +108,23 @@ static void ShowSignalDetectionWindow()
     }
     if (disable) ImGui::EndDisabled();
 
+    /* Mean removal */
+    ImGui::SameLine();
+    disable = BS_Folded > bufferState;
+    if (disable) ImGui::BeginDisabled();
+    if (ImGui::Button("de-mean"))
+    {
+        DeMeanFoldedHistogram(foldedHistogram, deMeanedHistogram);
+        bufferState = BS_DeMeaned;
+    }
+    if (disable) ImGui::EndDisabled();
+
     
-    /* Plots */
+    /* Creating plots */
     ImVec2 size{ -1, 0 };
     ImPlotFlags plotFlags{ };
 
+    /* Buffers */
     ImPlot::SetNextAxisToFit(ImAxis_Y1);
     if (ImPlot::BeginPlot("Buffers", size, plotFlags))
     {
@@ -108,15 +135,19 @@ static void ShowSignalDetectionWindow()
         ImPlot::EndPlot();
     }
 
+    /* Meta data */
     ImPlot::SetNextAxisToFit(ImAxis_Y1);
     if (ImPlot::BeginPlot("Meta data", size, plotFlags))
     {
-        ImPlot::SetupLegend(ImPlotLocation_South, ImPlotLegendFlags_Outside | ImPlotLegendFlags_Horizontal);
+        ImPlot::SetupLegend(ImPlotLocation_East, ImPlotLegendFlags_Outside);
         ImDrawList* draw_list = ImPlot::GetPlotDrawList();
         int* foldedData{ foldedHistogram.data() };
 
-        ImPlot::PlotBars("Folded distr.", foldedData, numBins);
-        ImPlot::PlotLine("Folded distr. line", foldedData, numBins);
+        ImPlot::PlotBars("Fold distr", foldedData, numBins);
+        ImPlot::PlotLine("Fold distr line", foldedData, numBins);
+
+        ImPlot::PlotBars("De-mean distr", deMeanedHistogram.data(), numBins);
+        ImPlot::PlotLine("De-mean distr line", deMeanedHistogram.data(), numBins);
 
         ImPlot::EndPlot();
     }

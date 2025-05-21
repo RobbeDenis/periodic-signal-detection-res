@@ -1,6 +1,15 @@
 #include "SignalDetectionWindow.h"
 #include <numbers>
 #include <algorithm>
+#include <random>
+
+float getRandomFloat(float min, float max) 
+{
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dist(min, max);
+    return dist(gen);
+}
 
 void SDFunctions::PopulateBuffer(std::vector<float>& buffer, float samplerate, float period, bool printContents)
 {
@@ -29,6 +38,14 @@ void SDFunctions::PopulateBuffer(std::vector<float>& buffer, float samplerate, f
     }
 
     std::cout << "\nPopulating complete\n\n";
+}
+
+void SDFunctions::PopulateBufferRnd(std::vector<float>& buffer)
+{
+    for (float& buffer : buffer)
+    {
+        buffer = getRandomFloat(SDWindow::minRnd, SDWindow::maxRnd);
+    }
 }
 
 void SDFunctions::ClearBuffers(std::vector<float>& buffer, std::vector<float>& foldedBuffer)
@@ -92,5 +109,20 @@ void SDFunctions::FillFoldedHistogram(std::vector<float>& foldedBuffer, std::vec
     {
         int index = std::min(static_cast<int>(sample / width), size - 1);
         foldedHistogram[index]++;
+    }
+}
+
+void SDFunctions::DeMeanFoldedHistogram(std::vector<int>& foldedHistogram, std::vector<int>& deMeanedHistogram)
+{
+    int mean{ 0 };
+    for (int num : foldedHistogram)
+    {
+        mean += num;
+    }
+    mean /= foldedHistogram.size();
+
+    for (int i{ 0 }; i < foldedHistogram.size(); ++i)
+    {
+        deMeanedHistogram[i] = foldedHistogram[i] - mean;
     }
 }
