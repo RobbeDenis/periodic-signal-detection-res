@@ -1,5 +1,6 @@
 #include "SignalDetectionWindow.h"
 #include <numbers>
+#include <algorithm>
 
 void SDFunctions::PopulateBuffer(std::vector<float>& buffer, float samplerate, float period, bool printContents)
 {
@@ -80,4 +81,16 @@ void SDFunctions::FoldBuffer(std::vector<float>& buffer, std::vector<float>& fol
         }
     }
     std::cout << "\nFolding complete\n\n";
+}
+
+void SDFunctions::FillFoldedHistogram(std::vector<float>& foldedBuffer, std::vector<int>& foldedHistogram, float trailPeriod)
+{
+    const int size{ static_cast<int>(foldedHistogram.size()) };
+    const float width{ trailPeriod / size };
+
+    for (float sample : foldedBuffer)
+    {
+        int index = std::min(static_cast<int>(sample / width), size - 1);
+        foldedHistogram[index]++;
+    }
 }
