@@ -98,5 +98,8 @@
     <ClInclude Include="..\implot\implot_internal.h">
       <Filter>Header Files\implot</Filter>
     </ClInclude>
+    <ClInclude Include="GuiHelpers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

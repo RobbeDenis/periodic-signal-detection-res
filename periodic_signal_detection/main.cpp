@@ -129,6 +129,7 @@ int main(int, char**)
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
+        //ShowSignalDetectionWindowManual();
         ShowSignalDetectionWindow();
 
         {
