@@ -17,11 +17,13 @@ void SDFunctions::PopulateBuffer(std::vector<float>& buffer, float samplerate, f
 
     std::cout << "\n\nPopulating the buffer...\n";
 
+    const float baseFreq{ 1.f / period };
+
     const float amp{ 1.f };
-    const float freq{ period };
+    const float freq{ baseFreq };
 
     const float amp2{ 3.f };
-    const float freq2{ period * 2.f };
+    const float freq2{ baseFreq * 2.f };
 
     for (int i{ 0 }; i < buffer.size(); ++i)
     {
@@ -102,6 +104,7 @@ void SDFunctions::FoldBuffer(std::vector<float>& buffer, std::vector<float>& fol
 
 void SDFunctions::FillFoldedHistogram(std::vector<float>& foldedBuffer, std::vector<int>& foldedHistogram, float trailPeriod)
 {
+    std::cout << "\n\nCreating folded histogram...\n";
     const int size{ static_cast<int>(foldedHistogram.size()) };
     const float width{ trailPeriod / size };
 
@@ -110,19 +113,43 @@ void SDFunctions::FillFoldedHistogram(std::vector<float>& foldedBuffer, std::vec
         int index = std::min(static_cast<int>(sample / width), size - 1);
         foldedHistogram[index]++;
     }
+    std::cout << "\nCreating complete\n\n";
 }
 
-void SDFunctions::DeMeanFoldedHistogram(std::vector<int>& foldedHistogram, std::vector<int>& deMeanedHistogram)
+void SDFunctions::DeMeanFoldedHistogram(std::vector<int>& foldedHistogram, std::vector<float>& deMeanedHistogram)
 {
-    int mean{ 0 };
+    std::cout << "\n\nRemoving mean...\n";
+    float mean{ 0 };
     for (int num : foldedHistogram)
     {
-        mean += num;
+        mean += static_cast<float>(num);
     }
+
     mean /= foldedHistogram.size();
+    std::cout << "Mean: " << mean << std::endl;
 
     for (int i{ 0 }; i < foldedHistogram.size(); ++i)
     {
         deMeanedHistogram[i] = foldedHistogram[i] - mean;
+    }
+    std::cout << "Mean removed\n";
+}
+
+void SDFunctions::AutoCorrelationFunction(std::vector<float>& deMeanedHistogram, std::vector<float>& acorHistogram, float bufferSize)
+{
+    size_t k{ deMeanedHistogram.size() };
+
+    for (int j{ 0 }; j < k - 1; ++j)
+    {
+        if (j > k / 2.f)
+            continue;
+
+        for (int i{ 0 }; i < k - j; ++i)
+        {
+            if(i + j <= k)
+                acorHistogram[j] += (deMeanedHistogram[i] * deMeanedHistogram[i + j]) / bufferSize;
+            else
+                acorHistogram[j] += (deMeanedHistogram[i] * (deMeanedHistogram[i + j] - k)) / bufferSize;
+        }
     }
 }

@@ -18,14 +18,15 @@ namespace SDWindow
         BS_Positive,
         BS_Folded,
         BS_DeMeaned,
+        BS_Autocorrelated,
     };
 
     /* init */
-    static int bufferSize{ 3000 };
-    static int numBins{ 25 };
-    static float samplerate{ 32.f };
-    static float period{ 1.f };
-    static float trailPeriod{ 1.f };
+    static int bufferSize{ 5000 };
+    static int numBins{ 100 };
+    static float samplerate{ 64.f };
+    static float period{ 0.1f };
+    static float trailPeriod{ 1.8f };
 
     static float maxRnd{ 20.f };
     static float minRnd{ -20.f };
@@ -34,7 +35,8 @@ namespace SDWindow
     static BufferState bufferState{ BS_Empty };
     static float shift{ 0.f };
     static std::vector<int> foldedHistogram(numBins, 0);
-    static std::vector<int> deMeanedHistogram(numBins, 0);
+    static std::vector<float> deMeanedHistogram(numBins, 0);
+    static std::vector<float> acorHistogram(numBins, 0);
 
     /* buffers */
     static std::vector<float> source(bufferSize, 0.f);
@@ -51,7 +53,8 @@ namespace SDFunctions
     bool ShiftPositive(std::vector<float>& buffer, float& shift, bool printContents = false);
     void FoldBuffer(std::vector<float>& buffer, std::vector<float>& foldedBuffer, float trailPeriod, bool printContents = false);
     void FillFoldedHistogram(std::vector<float>& foldedBuffer, std::vector<int>& foldedHistogram, float trailPeriod);
-    void DeMeanFoldedHistogram(std::vector<int>& foldedHistogram, std::vector<int>& deMeanedHistogram);
+    void DeMeanFoldedHistogram(std::vector<int>& foldedHistogram, std::vector<float>& deMeanedHistogram);
+    void AutoCorrelationFunction(std::vector<float>& deMeanedHistogram, std::vector<float>& acorHistogram, float bufferSize);
 }
 
 static void ShowSignalDetectionWindow()
@@ -119,6 +122,17 @@ static void ShowSignalDetectionWindow()
     }
     if (disable) ImGui::EndDisabled();
 
+    /* Autocorrelation */
+    ImGui::SameLine();
+    disable = BS_DeMeaned > bufferState;
+    if (disable) ImGui::BeginDisabled();
+    if (ImGui::Button("acor"))
+    {
+        AutoCorrelationFunction(deMeanedHistogram, acorHistogram, bufferSize);
+        bufferState = BS_Autocorrelated;
+    }
+    if (disable) ImGui::EndDisabled();
+
     
     /* Creating plots */
     ImVec2 size{ -1, 0 };
@@ -148,6 +162,9 @@ static void ShowSignalDetectionWindow()
 
         ImPlot::PlotBars("De-mean distr", deMeanedHistogram.data(), numBins);
         ImPlot::PlotLine("De-mean distr line", deMeanedHistogram.data(), numBins);
+
+        ImPlot::PlotBars("Acor distr", acorHistogram.data(), numBins);
+        ImPlot::PlotLine("Acor distr line", acorHistogram.data(), numBins);
 
         ImPlot::EndPlot();
     }
