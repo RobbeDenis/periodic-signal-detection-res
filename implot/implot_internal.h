@@ -283,10 +283,10 @@ struct ImPlotDateTimeSpec {
         UseISO8601     = use_iso_8601;
         Use24HourClock = use_24_hr_clk;
     }
-    ImPlotDateFmt Date;
-    ImPlotTimeFmt Time;
-    bool UseISO8601;
-    bool Use24HourClock;
+    ImPlotDateFmt Date{};
+    ImPlotTimeFmt Time{};
+    bool UseISO8601{};
+    bool Use24HourClock{};
 };
 
 // Two part timestamp struct.
@@ -540,7 +540,9 @@ struct ImPlotTick
     int    Level;
     int    Idx;
 
-    ImPlotTick(double value, bool major, int level, bool show_label) {
+    ImPlotTick(double value, bool major, int level, bool show_label)
+        : Idx{ }
+    {
         PixelPos     = 0;
         PlotPos      = value;
         Major        = major;

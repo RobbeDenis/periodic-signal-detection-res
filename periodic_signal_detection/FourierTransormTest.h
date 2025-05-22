@@ -14,7 +14,9 @@ public:
 
 private:
 	float m_SampleRate;
+	float m_TestFrequency;
 	size_t m_BufferSize;
 	std::vector<float> m_Source;
+	std::vector<double> m_CosineFT;
 };
 
