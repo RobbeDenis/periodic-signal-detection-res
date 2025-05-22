@@ -83,7 +83,7 @@ static void ShowSignalDetectionWindow()
 
     bool disable{ false };
 
-    ImGui::Begin("Periodic signal detection - Manual");
+    ImGui::Begin("Periodic signal detection");
 
     /* Processing buttons */
 
@@ -93,6 +93,7 @@ static void ShowSignalDetectionWindow()
     if (ImGui::Button("populate buffer"))
     {
         PopulateBuffer(source, period, secondsPerStep);
+        AutoCorrelationFunction(source, folded, bufferSize);
         //AddBufferNoise(source);
 
         //PopulateBufferRnd(source);

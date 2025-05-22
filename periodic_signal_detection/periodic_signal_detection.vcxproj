@@ -140,8 +140,10 @@
     <ClCompile Include="..\implot\implot.cpp" />
     <ClCompile Include="..\implot\implot_demo.cpp" />
     <ClCompile Include="..\implot\implot_items.cpp" />
+    <ClCompile Include="BruteForceDSP.cpp" />
+    <ClCompile Include="FourierTransormTest.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SignalDetectionWindow.cpp" />
+    <ClCompile Include="SignalGenerators.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\imgui\imconfig.h" />
@@ -154,8 +156,11 @@
     <ClInclude Include="..\imgui\imstb_truetype.h" />
     <ClInclude Include="..\implot\implot.h" />
     <ClInclude Include="..\implot\implot_internal.h" />
+    <ClInclude Include="BruteForceDSP.h" />
+    <ClInclude Include="DSPWindow.h" />
+    <ClInclude Include="FourierTransormTest.h" />
     <ClInclude Include="GuiHelpers.h" />
-    <ClInclude Include="SignalDetectionWindow.h" />
+    <ClInclude Include="SignalGenerators.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
