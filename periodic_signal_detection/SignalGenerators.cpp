@@ -1,6 +1,7 @@
 #include "SignalGenerators.h"
 #include <numbers>
 #include <random>
+#include <iostream>
 
 using namespace std::numbers;
 
@@ -20,6 +21,8 @@ void Generate::Sine(std::vector<float>& buffer, float amp, float freq, float sam
 		const float time{ static_cast<float>(i) * step };
 		buffer[i] += amp * sinf(2 * pi_v<float> * freq * time);
 	}
+
+	std::cout << "Sine: " << freq << " Hz\n";
 }
 
 void Generate::Cosine(std::vector<float>& buffer, float amp, float freq, float samplerate)
@@ -30,6 +33,8 @@ void Generate::Cosine(std::vector<float>& buffer, float amp, float freq, float s
 		const float time{ static_cast<float>(i) * step };
 		buffer[i] += amp * cosf(2 * pi_v<float> * freq * time);
 	}
+
+	std::cout << "Cosine: " << freq << " Hz\n";
 }
 
 void Generate::RndNoise(std::vector<float>& buffer, float min, float max)

@@ -1,5 +1,6 @@
 #include "BruteForceDSP.h"
 #include <numbers>
+#include <algorithm>
 
 using namespace std::numbers;
 
@@ -71,6 +72,49 @@ std::vector<double> Brute::FourierSineTransform(const std::vector<float>& input,
 
         makeAbs ? output.push_back(std::abs(sum)) : output.push_back(sum);
     }
+
+    return output;
+}
+
+std::vector<double> Brute::GetPeakFreqThreshold(const std::vector<double>& input, double treshold, float samplerate, size_t N)
+{
+    std::vector<double> output{ };
+
+    for (int k{ 0 }; k < input.size(); ++k)
+    {
+        if (input[k] > treshold)
+        {
+            output.push_back(k * samplerate / N);
+        }
+    }
+
+    std::sort(output.begin(), output.end());
+    return output;
+}
+
+std::vector<double> Brute::GetSimpleMeanFreq(const std::vector<double>& input, double tolerance)
+{
+    std::vector<double> output;
+
+    double sum{ input[0] };
+    int count{ 1 };
+
+    for (size_t i{ 1 }; i < input.size(); ++i)
+    {
+        if (std::abs(input[i] - input[i - 1]) <= tolerance)
+        {
+            sum += input[i];
+            ++count;
+        }
+        else
+        {
+            output.push_back(sum / count);
+            sum = input[i];
+            count = 1;
+        }
+    }
+
+    output.push_back(sum / count);
 
     return output;
 }

@@ -4,12 +4,13 @@
 
 namespace Brute
 {
-	/* K = N / 2 */
+	/* Fourier Transform */
+
 	std::vector<std::complex<double>> DiscreteFourierTransform(const std::vector<float>& input);
-
-	/* K = N / 2 */
 	std::vector<double> FourierCosineTransform(const std::vector<float>& input, bool makeAbs = true);
-
-	/* K = N / 2 */
 	std::vector<double> FourierSineTransform(const std::vector<float>& input, bool makeAbs = true);
+
+	/* Filters */
+	std::vector<double> GetPeakFreqThreshold(const std::vector<double>& input, double treshold, float samplerate, size_t N);
+	std::vector<double> GetSimpleMeanFreq(const std::vector<double>& input, double tolerance);
 }
