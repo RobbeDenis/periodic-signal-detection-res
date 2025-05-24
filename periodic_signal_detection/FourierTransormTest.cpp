@@ -57,6 +57,14 @@ void FourierTransormTest::Update()
         m_OutputFreq = Brute::GetSimpleMeanFreq(m_OutputFreq, m_MeanTolerance);
     }
     ImGui::SameLine();
+    if (ImGui::Button("DFT Old"))
+    {
+        m_ComplexOutput = Brute::DiscreteFourierTransformOld(m_Source);
+        CopyComplexToOutput();
+        m_OutputFreq = Brute::GetPeakFreqThreshold(m_Output, m_PeakTreshold, m_SampleRate, m_BufferSize);
+        m_OutputFreq = Brute::GetSimpleMeanFreq(m_OutputFreq, m_MeanTolerance);
+    }
+    ImGui::SameLine();
     if (ImGui::Button("DFT"))
     {
         m_ComplexOutput = Brute::DiscreteFourierTransform(m_Source);
