@@ -5,7 +5,7 @@
 
 using namespace std::numbers;
 
-std::vector<std::complex<double>> Brute::DiscreteFourierTransform(const std::vector<float>& input)
+std::vector<std::complex<double>> Brute::DiscreteFourierTransformLiterals(const std::vector<float>& input)
 {
     if (input.empty())
     {
@@ -18,7 +18,8 @@ std::vector<std::complex<double>> Brute::DiscreteFourierTransform(const std::vec
     const int N = static_cast<int>(input.size());
     const int K{ N / 2 };
     std::complex<double> sum{ 0., 0. };
-    std::complex<double> z{ 0., 0. };
+    std::complex<double> z{ -1i * 2. * pi_v<double> };
+    std::complex<double> w;
 
     std::vector<std::complex<double>> output;
     output.reserve(K);
@@ -26,11 +27,10 @@ std::vector<std::complex<double>> Brute::DiscreteFourierTransform(const std::vec
     for (int k{ 0 }; k < K; ++k)
     {
         sum = std::complex<double>(0., 0.);
-        double f{ static_cast<double>(k) / static_cast<double>(N) };
+        w = static_cast<double>(k) / static_cast<double>(N) * z;
         for (int n{ 0 }; n < N; ++n)
         {
-            z = -1i * 2. * pi_v<double> * static_cast<double>(n) * f;
-            sum += static_cast<double>(input[n]) * std::exp(z);
+            sum += std::exp(w * static_cast<double>(n)) * static_cast<double>(input[n]);
         }
         output.push_back(sum);
     }
@@ -38,7 +38,7 @@ std::vector<std::complex<double>> Brute::DiscreteFourierTransform(const std::vec
     return output;
 }
 
-std::vector<std::complex<double>> Brute::DiscreteFourierTransformOld(const std::vector<float>& input)
+std::vector<std::complex<double>> Brute::DiscreteFourierTransform(const std::vector<float>& input)
 {
     if (input.empty())
     {
@@ -48,7 +48,9 @@ std::vector<std::complex<double>> Brute::DiscreteFourierTransformOld(const std::
 
     const int N = static_cast<int>(input.size());
     const int K{ N / 2};
-    std::complex<double> sum{ 0., 0. };
+    const double topi{ 2. * pi_v<double> };
+    std::complex<double> sum;
+    std::complex<double> w;
 
     std::vector<std::complex<double>> output;
     output.reserve(K);
@@ -56,11 +58,10 @@ std::vector<std::complex<double>> Brute::DiscreteFourierTransformOld(const std::
     for (int k{ 0 }; k < K; ++k)
     {
         sum = std::complex<double>(0., 0.);
+        double a{ static_cast<double>(k) / static_cast<double>(N) * topi };
         for (int n{ 0 }; n < N; ++n)
         {
-            double r = cos(2. * pi_v<double> *n * k / N);
-            double z = -sin(2. * pi_v<double> *n * k / N);
-            std::complex<double> w(r, z);
+            w = std::complex<double>(cos(a * static_cast<double>(n)), -sin(a * static_cast<double>(n)));
             sum += static_cast<double>(input[n]) * w;
         }
 

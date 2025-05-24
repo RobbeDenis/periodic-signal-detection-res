@@ -8,7 +8,7 @@ namespace Brute
 	/* Fourier Transform */
 
 	std::vector<std::complex<double>> DiscreteFourierTransform(const std::vector<float>& input);
-	std::vector<std::complex<double>> DiscreteFourierTransformOld(const std::vector<float>& input);
+	std::vector<std::complex<double>> DiscreteFourierTransformLiterals(const std::vector<float>& input);
 	std::vector<double> FourierCosineTransform(const std::vector<float>& input, bool makeAbs = true);
 	std::vector<double> FourierSineTransform(const std::vector<float>& input, bool makeAbs = true);
 

@@ -141,6 +141,7 @@
     <ClCompile Include="..\implot\implot_demo.cpp" />
     <ClCompile Include="..\implot\implot_items.cpp" />
     <ClCompile Include="BruteForceDSP.cpp" />
+    <ClCompile Include="DFTSpeedTest.cpp" />
     <ClCompile Include="FourierTransormTest.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SignalGenerators.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="..\implot\implot.h" />
     <ClInclude Include="..\implot\implot_internal.h" />
     <ClInclude Include="BruteForceDSP.h" />
+    <ClInclude Include="DFTSpeedTest.h" />
     <ClInclude Include="DSPWindow.h" />
     <ClInclude Include="FourierTransormTest.h" />
     <ClInclude Include="GuiHelpers.h" />
