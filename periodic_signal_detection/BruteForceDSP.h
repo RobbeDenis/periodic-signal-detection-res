@@ -16,4 +16,12 @@ namespace Brute
 
 	std::vector<double> GetPeakFreqThreshold(const std::vector<double>& input, double treshold, float samplerate, size_t N);
 	std::vector<double> GetSimpleMeanFreq(const std::vector<double>& input, double tolerance);
+
+	/* Opti */
+	/* Trying to squueze out performance where I can */
+	/* Fourier Transform */
+
+	std::vector<std::complex<double>> Opti_DiscreteFourierTransform(const std::vector<float>& input);
+	std::vector<std::complex<double>> Opti_DiscreteFourierTransformLiterals(const std::vector<float>& input);
+
 }

@@ -27,7 +27,7 @@ FourierTransormTest::FourierTransormTest()
     Generate::Sine(m_Source, 1.f, 164.f, m_SampleRate);
     Generate::Cosine(m_Source, 1.f, 47.41f, m_SampleRate);
     Generate::Cosine(m_Source, 1.f, 164.f, m_SampleRate);
-    Generate::RndNoise(m_Source, -5.f, 5.f);
+    //Generate::RndNoise(m_Source, -5.f, 5.f);
 }
 
 FourierTransormTest::~FourierTransormTest()
@@ -57,17 +57,17 @@ void FourierTransormTest::Update()
         m_OutputFreq = Brute::GetSimpleMeanFreq(m_OutputFreq, m_MeanTolerance);
     }
     ImGui::SameLine();
-    if (ImGui::Button("DFT Old"))
+    if (ImGui::Button("DFT"))
     {
-        m_ComplexOutput = Brute::DiscreteFourierTransformOld(m_Source);
+        m_ComplexOutput = Brute::Opti_DiscreteFourierTransform(m_Source);
         CopyComplexToOutput();
         m_OutputFreq = Brute::GetPeakFreqThreshold(m_Output, m_PeakTreshold, m_SampleRate, m_BufferSize);
         m_OutputFreq = Brute::GetSimpleMeanFreq(m_OutputFreq, m_MeanTolerance);
     }
     ImGui::SameLine();
-    if (ImGui::Button("DFT"))
+    if (ImGui::Button("DFT Lit"))
     {
-        m_ComplexOutput = Brute::DiscreteFourierTransform(m_Source);
+        m_ComplexOutput = Brute::Opti_DiscreteFourierTransformLiterals(m_Source);
         CopyComplexToOutput();
         m_OutputFreq = Brute::GetPeakFreqThreshold(m_Output, m_PeakTreshold, m_SampleRate, m_BufferSize);
         m_OutputFreq = Brute::GetSimpleMeanFreq(m_OutputFreq, m_MeanTolerance);

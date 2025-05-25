@@ -11,18 +11,20 @@
 
 DFTSpeedTest::DFTSpeedTest()
 	: DSPWindow()
-    , m_SampleRate{ 512.f }
+    , m_SampleRate{ 2048.f }
     , m_TestFrequency{ 8.9f }
-    , m_BufferSize{ 5000 }
+    , m_BufferSize{ 44100 }
     , m_PeakTreshold{ 600. }
     , m_MeanTolerance{ 2. }
     , m_Source{ }
     , m_Output{ }
     , m_ComplexOutput{ }
-    , m_NumTests{ 100 }
+    , m_NumTests{ 1 }
 {
     m_Source.resize(m_BufferSize, 0.f);
     Generate::Sine(m_Source, 1.f, m_TestFrequency, m_SampleRate);
+    Generate::Sine(m_Source, 1.f, 880.f, m_SampleRate);
+    Generate::Sine(m_Source, 1.f, 440.f, m_SampleRate);
 }
 
 DFTSpeedTest::~DFTSpeedTest()
@@ -43,13 +45,13 @@ void DFTSpeedTest::Update()
 
         for (int i{ 0 }; i < m_NumTests; ++i)
         {
-            m_ComplexOutput = Brute::DiscreteFourierTransform(m_Source);
+            m_ComplexOutput = Brute::Opti_DiscreteFourierTransform(m_Source);
         }
 
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = end - start;
 
-        std::cout << "DFT: " << elapsed.count() << " seconds\n";
+        std::cout << "Buffer: " << m_BufferSize << " Cycles: " << m_NumTests << " DFT Opti: " << elapsed.count() << " seconds\n";
 
         CopyComplexToOutput();
         m_OutputFreq = Brute::GetPeakFreqThreshold(m_Output, m_PeakTreshold, m_SampleRate, m_BufferSize);
@@ -60,17 +62,15 @@ void DFTSpeedTest::Update()
     {
 
         auto start = std::chrono::high_resolution_clock::now();
-
         for (int i{ 0 }; i < m_NumTests; ++i)
         {
-            m_ComplexOutput = Brute::DiscreteFourierTransformLiterals(m_Source);
+            m_ComplexOutput = Brute::Opti_DiscreteFourierTransformLiterals(m_Source);
         }
-
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = end - start;
 
-        std::cout << "Literal DFT: " << elapsed.count() << " seconds\n";
-        
+        std::cout << "Buffer: " << m_BufferSize << " Cycles: " << m_NumTests << " Literal DFT Opti: " << elapsed.count() << " seconds\n";
+
         CopyComplexToOutput();
         m_OutputFreq = Brute::GetPeakFreqThreshold(m_Output, m_PeakTreshold, m_SampleRate, m_BufferSize);
         m_OutputFreq = Brute::GetSimpleMeanFreq(m_OutputFreq, m_MeanTolerance);
