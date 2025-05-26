@@ -19,7 +19,7 @@ private:
 
 	void CopyComplexToOutput();
 	void SetRndFreq();
-	void SetDeltaColor(double delta);
+	void SetDeltaColorFreq(double delta);
 	void BufferSizeChanged();
 
 	float GetRandomFloat(float min, float max);
@@ -30,6 +30,7 @@ private:
 	float m_SampleRate;
 	float m_MinNoise;
 	float m_MaxNoise;
+	double m_SourcePeriodMs;
 	double m_PeakTreshold;
 	double m_MeanTolerance;
 	int m_BufferSize;

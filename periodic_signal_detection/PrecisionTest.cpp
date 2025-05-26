@@ -7,6 +7,7 @@
 #include "BruteForceDSP.h"
 
 #include <random>
+#include <numeric>
 
 float PrecisionTest::GetRandomFloat(float min, float max)
 {
@@ -26,6 +27,7 @@ PrecisionTest::PrecisionTest()
     , m_NumRndFreq{ 5 }
     , m_MinNoise{ -5.f }
     , m_MaxNoise{ 5.f }
+    , m_SourcePeriodMs{ 0. }
     , m_bApplyNoise{ false }
     , m_Source{ }
 {
@@ -96,10 +98,15 @@ void PrecisionTest::Update()
     ImGui::Text("SOURCE");
     ImGui::Dummy(hSep);
     ImGui::Text("Frequencies (Hz)");
+    ImGui::BeginGroup();
     for (float freq : m_SourceFreq)
     {
         ImGui::Text("%.5f", freq);
     }
+    ImGui::EndGroup();
+    ImGui::Dummy(hSep);
+    ImGui::Text("Period (ms)");
+    ImGui::Text("%.5f", m_SourcePeriodMs);
     ImGui::EndGroup();
 
     ImGui::SameLine();
@@ -125,11 +132,16 @@ void PrecisionTest::Update()
     ImGui::Text("Delta (%%)");
     for (double delta : m_DeltaPercent)
     {
-        SetDeltaColor(delta);
+        SetDeltaColorFreq(delta);
         ImGui::Text("%.5f", delta);
         ImGui::PopStyleColor();
     }
     ImGui::EndGroup();
+    ImGui::Dummy(hSep);
+    const double mean{ static_cast<double>(std::accumulate(begin(m_Mean), end(m_Mean), 0.f)) };
+    const double period = static_cast<double>(m_Mean.size()) / mean * 1000.;
+    ImGui::Text("Period (ms)");
+    ImGui::Text("%.5f", period);
     ImGui::EndGroup();
 
     ImGui::SameLine();
@@ -179,6 +191,7 @@ void PrecisionTest::MainProperties()
     ImGui::Text("SOURCE");
     ImGui::Text("Samplerate: %.f", m_SampleRate);
     ImGui::Text("Buffer size: %d", m_BufferSize);
+    ImGui::Text("Period: %.5f ms", m_SourcePeriodMs);
     ImGui::EndGroup();
 
     ImGui::SameLine();
@@ -262,6 +275,9 @@ void PrecisionTest::SetRndFreq()
         Generate::RndNoise(m_Source, m_MinNoise, m_MaxNoise);
     }
 
+    const double mean{ static_cast<double>(std::accumulate(begin(m_SourceFreq), end(m_SourceFreq), 0.f))};
+    m_SourcePeriodMs = static_cast<double>(m_SourceFreq.size()) / mean * 1000.;
+
     std::sort(begin(m_SourceFreq), end(m_SourceFreq));
 }
 
@@ -295,7 +311,7 @@ std::vector<double> PrecisionTest::CalculatePercentageDelta(const std::vector<fl
     return delta;
 }
 
-void PrecisionTest::SetDeltaColor(double delta)
+void PrecisionTest::SetDeltaColorFreq(double delta)
 {
     const double absDelta{ std::abs(delta) };
 
