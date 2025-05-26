@@ -8,6 +8,7 @@
 
 #include <random>
 #include <numeric>
+#include <algorithm>
 
 float PrecisionTest::GetRandomFloat(float min, float max)
 {
@@ -20,14 +21,15 @@ float PrecisionTest::GetRandomFloat(float min, float max)
 PrecisionTest::PrecisionTest()
 	: DSPWindow()
     , m_bOutputChanged{ true }
-    , m_SampleRate{ 512.f }
-    , m_BufferSize{ 5000 }
+    , m_SampleRate{ 4400.f }
+    , m_BufferSize{ 44100 }
     , m_PeakTreshold{ 600. }
-    , m_MeanTolerance{ 2. }
+    , m_MeanTolerance{ 1. }
     , m_NumRndFreq{ 5 }
     , m_MinNoise{ -5.f }
     , m_MaxNoise{ 5.f }
-    , m_SourcePeriodMs{ 0. }
+    , m_MinFreq{ 0.1f }
+    , m_MaxFreq{ 2100.f }
     , m_bApplyNoise{ false }
     , m_Source{ }
 {
@@ -47,26 +49,25 @@ void PrecisionTest::Update()
 {
     ImGui::Begin("Precision test");
 
+    const float window_width = ImGui::GetContentRegionAvail().x;
+    ImVec2 hSep{ 0.f, 2.f };
+    ImVec2 vSep{ 30.f, 0.f };
+    ImVec2 size{ window_width / 3.f - 5.f, 250.f };
+    ImPlotFlags plotFlags{ ImPlotFlags_NoLegend };
+
     if (ImGui::Button("Calculate"))
     {
         SetRndFreq();
         m_DFTOutputComplex = Brute::Opti_DiscreteFourierTransform(m_Source);
         CopyComplexToOutput();
         m_DetectedPeaks = Brute::GetPeakFreqThreshold(m_DFTOutput, m_PeakTreshold, m_SampleRate, m_BufferSize);
-        m_Mean = Brute::GetSimpleMeanFreq(m_DetectedPeaks, m_MeanTolerance);
-        m_DeltaPercent = CalculatePercentageDelta(m_SourceFreq, m_Mean);
+        m_JointPeaksMean = Brute::GetSimpleMeanFreq(m_DetectedPeaks, m_MeanTolerance);
+        m_DeltaPercentFreq = CalculatePercentageDelta(m_SourceFreq, m_JointPeaksMean);
         m_bOutputChanged = true;
     }
 
     ImGui::SameLine();
     ImGui::Text("<-- Random frequencies");
-
-    /* Init */
-    const float window_width = ImGui::GetContentRegionAvail().x;
-    ImVec2 hSep{ 0.f, 2.f };
-    ImVec2 vSep{ 30.f, 0.f };
-    ImVec2 size{ window_width / 2.f - 5.f, 0 };
-    ImPlotFlags plotFlags{ ImPlotFlags_NoLegend };
 
     ImPlot::SetNextAxisToFit(ImAxis_Y1);
     if (ImPlot::BeginPlot("Source", size, plotFlags))
@@ -90,108 +91,55 @@ void PrecisionTest::Update()
         ImPlot::EndPlot();
     }
 
-    MainProperties();
-
-    ImGui::BeginGroup();
-
-    ImGui::BeginGroup();
-    ImGui::Text("SOURCE");
-    ImGui::Dummy(hSep);
-    ImGui::Text("Frequencies (Hz)");
-    ImGui::BeginGroup();
-    for (float freq : m_SourceFreq)
-    {
-        ImGui::Text("%.5f", freq);
-    }
-    ImGui::EndGroup();
-    ImGui::Dummy(hSep);
-    ImGui::Text("Period (ms)");
-    ImGui::Text("%.5f", m_SourcePeriodMs);
-    ImGui::EndGroup();
-
-    ImGui::SameLine();
-    ImGui::Dummy(vSep);
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-
-    ImGui::SameLine();
-    ImGui::BeginGroup();
-    ImGui::Text("MEAN");
-    ImGui::Dummy(hSep);
-
-    ImGui::BeginGroup();
-    ImGui::Text("Frequencies (Hz)");
-    for (double freq : m_Mean)
-    {
-        ImGui::Text("%.5f", freq);
-    }
-    ImGui::EndGroup();
-
-    ImGui::SameLine();
-    ImGui::BeginGroup();
-    ImGui::Text("Delta (%%)");
-    for (double delta : m_DeltaPercent)
-    {
-        SetDeltaColorFreq(delta);
-        ImGui::Text("%.5f", delta);
-        ImGui::PopStyleColor();
-    }
-    ImGui::EndGroup();
-    ImGui::Dummy(hSep);
-    const double mean{ static_cast<double>(std::accumulate(begin(m_Mean), end(m_Mean), 0.f)) };
-    const double period = static_cast<double>(m_Mean.size()) / mean * 1000.;
-    ImGui::Text("Period (ms)");
-    ImGui::Text("%.5f", period);
-    ImGui::EndGroup();
-
-    ImGui::SameLine();
-    ImGui::Dummy(vSep);
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-
-
     ImGui::SameLine();
 
     ImPlot::SetNextAxisToFit(ImAxis_X1);
     ImPlot::SetNextAxisToFit(ImAxis_Y1);
     ImPlot::PushColormap(ImPlotColormap_Spectral);
-    const float plot_width{ 400.f };
-    ImGui::SetCursorPosX(window_width - plot_width);
-    if (ImPlot::BeginPlot("Results", { plot_width, 0.f}))
+    if (ImPlot::BeginPlot("Peaks", size))
     {
         ImPlot::PlotBars("Detected peaks", m_DetectedPeaks.data(), static_cast<int>(m_DetectedPeaks.size()));
-        ImPlot::PlotBars("Mean", m_Mean.data(), static_cast<int>(m_Mean.size()));
+        ImPlot::PlotBars("Joint peaks mean", m_JointPeaksMean.data(), static_cast<int>(m_JointPeaksMean.size()));
 
         ImPlot::EndPlot();
     }
-    ImGui::EndGroup();
 
-    ImGui::End();
+    MainProperties(hSep, vSep);
+
+    ImGui::BeginGroup();
+
+    SourceStats(hSep, vSep);
+    ImGui::SameLine();
+    JointPeakStats(hSep, vSep);
+    ImGui::SameLine();
+    JointPeakWeightedStats(hSep, vSep);
+
+    ImGui::SameLine();
+
+    
+
+    ImGui::EndGroup();
 
     if (m_bOutputChanged)
         m_bOutputChanged = false;
+
+    ImGui::End();
 }
 
-void PrecisionTest::Reset()
-{
-}
-
-void PrecisionTest::MainProperties()
+void PrecisionTest::MainProperties(const ImVec2& hSep, const ImVec2& vSep)
 {
     const float input_width{ 70.f };
     const float window_width = ImGui::GetContentRegionAvail().x;
-    ImVec2 hSep{ 0.f, 2.f };
-    ImVec2 vSep{ 10.f, 0.f };
 
-    /* Info */
     ImGui::BeginGroup();
+
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
 
+    /* Source */
     ImGui::BeginGroup();
     ImGui::Text("SOURCE");
     ImGui::Text("Samplerate: %.f", m_SampleRate);
     ImGui::Text("Buffer size: %d", m_BufferSize);
-    ImGui::Text("Period: %.5f ms", m_SourcePeriodMs);
     ImGui::EndGroup();
 
     ImGui::SameLine();
@@ -200,6 +148,27 @@ void PrecisionTest::MainProperties()
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 
     ImGui::SameLine();
+
+    /* Frequencies */
+    ImGui::BeginGroup();
+    ImGui::Text("FREQ");
+    ImGui::Text("Min: ");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(input_width);
+    ImGui::InputFloat("##MinFreq", &m_MinFreq, 0.0, 0.0, "%.2f");
+    ImGui::Text("Max: ");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(input_width);
+    ImGui::InputFloat("##MaxFreq", &m_MaxFreq, 0.0, 0.0, "%.2f");
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+    ImGui::Dummy(vSep);
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+
+    ImGui::SameLine();
+
     ImGui::BeginGroup();
     ImGui::Text("NOISE");
     ImGui::SameLine();
@@ -220,6 +189,7 @@ void PrecisionTest::MainProperties()
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 
     ImGui::SameLine();
+
     ImGui::BeginGroup();
     ImGui::Text("PEAK DETECTION");
     ImGui::Text("Peak treshhold: ");
@@ -234,8 +204,9 @@ void PrecisionTest::MainProperties()
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 
     ImGui::SameLine();
+
     ImGui::BeginGroup();
-    ImGui::Text("MEAN");
+    ImGui::Text("JOINT PEAK MEAN");
     ImGui::Text("Mean tol:");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(input_width);
@@ -246,9 +217,85 @@ void PrecisionTest::MainProperties()
     ImGui::Dummy(vSep);
     ImGui::SameLine();
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Horizontal);
+
     ImGui::EndGroup();
+}
+
+void PrecisionTest::SourceStats(const ImVec2& hSep, const ImVec2& vSep)
+{
+    ImGui::BeginGroup();
+    ImGui::Text("SOURCE");
+    ImGui::Dummy(hSep);
+    ImGui::Text("Frequencies (Hz)");
+
+    ImGui::BeginGroup();
+    for (float freq : m_SourceFreq)
+    {
+        ImGui::Text("%.5f", freq);
+    }
+    ImGui::EndGroup();
+    ImGui::Dummy(hSep);
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+    ImGui::Dummy(vSep);
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+}
+
+void PrecisionTest::JointPeakStats(const ImVec2& hSep, const ImVec2& vSep)
+{
+    ImGui::BeginGroup();
+
+    ImGui::Text("JOINT PEAK MEAN");
+    ImGui::Dummy(hSep);
+
+    ImGui::BeginGroup();
+    ImGui::Text("Frequencies (Hz)");
+    for (double freq : m_JointPeaksMean)
+    {
+        ImGui::Text("%.5f", freq);
+    }
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+
+    ImGui::BeginGroup();
+    ImGui::Text("Delta (%%)");
+    for (double delta : m_DeltaPercentFreq)
+    {
+        SetDeltaColorFreq(delta);
+        ImGui::Text("%.5f", delta);
+        ImGui::PopStyleColor();
+    }
+    ImGui::EndGroup();
+
+    ImGui::Dummy(hSep);
+
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+    ImGui::Dummy(vSep);
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+}
+
+void PrecisionTest::JointPeakWeightedStats(const ImVec2& hSep, const ImVec2& vSep)
+{
+    ImGui::BeginGroup();
+
+    ImGui::Text("PEAK MEAN LOG");
+    ImGui::Dummy(hSep);
+
+    ImGui::Dummy(hSep);
+
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+    ImGui::Dummy(vSep);
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 }
 
 void PrecisionTest::CopyComplexToOutput()
@@ -265,7 +312,7 @@ void PrecisionTest::SetRndFreq()
     std::fill(begin(m_Source), end(m_Source), 0.f);
     for (int i{ 0 }; i < m_NumRndFreq; ++i)
     {
-        const float freq{ GetRandomFloat(1.f, 200.f) };
+        const float freq{ GetRandomFloat(m_MinFreq, m_MaxFreq) };
         m_SourceFreq[i] = freq;
         Generate::Sine(m_Source, 1.f, freq, m_SampleRate);
     }
@@ -274,9 +321,6 @@ void PrecisionTest::SetRndFreq()
     {
         Generate::RndNoise(m_Source, m_MinNoise, m_MaxNoise);
     }
-
-    const double mean{ static_cast<double>(std::accumulate(begin(m_SourceFreq), end(m_SourceFreq), 0.f))};
-    m_SourcePeriodMs = static_cast<double>(m_SourceFreq.size()) / mean * 1000.;
 
     std::sort(begin(m_SourceFreq), end(m_SourceFreq));
 }
@@ -333,4 +377,8 @@ void PrecisionTest::BufferSizeChanged()
     m_Source.resize(m_BufferSize, 0.f);
     m_DFTOutput.reserve(m_BufferSize / 2);
     m_DFTOutputComplex.reserve(m_BufferSize / 2);
+}
+
+void PrecisionTest::Reset()
+{
 }

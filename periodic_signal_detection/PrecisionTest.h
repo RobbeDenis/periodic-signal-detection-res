@@ -4,6 +4,8 @@
 #include <vector>
 #include <complex>
 
+struct ImVec2;
+
 class PrecisionTest final : public DSPWindow
 {
 public:
@@ -15,12 +17,16 @@ public:
 	void Reset() override;
 
 private:
-	void MainProperties();
+	void MainProperties(const ImVec2& hSep, const ImVec2& vSep);
+	void SourceStats(const ImVec2& hSep, const ImVec2& vSep);
+	void JointPeakStats(const ImVec2& hSep, const ImVec2& vSep);
+	void JointPeakWeightedStats(const ImVec2& hSep, const ImVec2& vSep);
 
 	void CopyComplexToOutput();
 	void SetRndFreq();
-	void SetDeltaColorFreq(double delta);
 	void BufferSizeChanged();
+
+	void SetDeltaColorFreq(double delta);
 
 	float GetRandomFloat(float min, float max);
 	std::vector<double> CalculatePercentageDelta(const std::vector<float>& input, const std::vector<double>& output);
@@ -30,18 +36,19 @@ private:
 	float m_SampleRate;
 	float m_MinNoise;
 	float m_MaxNoise;
-	double m_SourcePeriodMs;
+	float m_MinFreq;
+	float m_MaxFreq;
 	double m_PeakTreshold;
 	double m_MeanTolerance;
 	int m_BufferSize;
-	size_t m_NumRndFreq;
+	int m_NumRndFreq;
 
 	std::vector<float> m_Source;
 	std::vector<float> m_SourceFreq;
-	std::vector<double> m_DeltaPercent;
+	std::vector<double> m_DeltaPercentFreq;
 	std::vector<double> m_DFTOutput;
 	std::vector<double> m_DetectedPeaks;
-	std::vector<double> m_Mean;
+	std::vector<double> m_JointPeaksMean;
 	std::vector<std::complex<double>> m_DFTOutputComplex;
 };
 
