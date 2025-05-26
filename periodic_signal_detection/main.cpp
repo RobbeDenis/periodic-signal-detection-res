@@ -12,6 +12,7 @@
 
 #include "FourierTransormTest.h"
 #include "DFTSpeedTest.h"
+#include "PrecisionTest.h"
 
 // Data
 static ID3D11Device* g_pd3dDevice = nullptr;
@@ -67,11 +68,13 @@ int main(int, char**)
 
     // State
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    std::unique_ptr<FourierTransormTest> pFTWindow = std::make_unique<FourierTransormTest>();
-    std::unique_ptr<DFTSpeedTest> pSpeedTest = std::make_unique<DFTSpeedTest>();
+    //std::unique_ptr<FourierTransormTest> pFTWindow = std::make_unique<FourierTransormTest>();
+    std::unique_ptr<PrecisionTest> pPrecisionWindow = std::make_unique<PrecisionTest>();
+    //std::unique_ptr<DFTSpeedTest> pSpeedTest = std::make_unique<DFTSpeedTest>();
 
-    pFTWindow->Init();
-    pSpeedTest->Init();
+    //pFTWindow->Init();
+    pPrecisionWindow->Init();
+    //pSpeedTest->Init();
 
     // Main loop
     bool done = false;
@@ -112,8 +115,9 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        pFTWindow->Update();
-        pSpeedTest->Update();
+        //pFTWindow->Update();
+        pPrecisionWindow->Update();
+        //pSpeedTest->Update();
 
         // Aplication stats
         {

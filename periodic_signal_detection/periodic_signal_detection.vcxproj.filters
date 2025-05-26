@@ -25,6 +25,12 @@
     <Filter Include="Header Files\implot">
       <UniqueIdentifier>{1be8a392-b38e-4064-9740-b9f72b1e1c7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Tests">
+      <UniqueIdentifier>{720e6027-6776-41af-b08c-7c06fbc8e0fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tests">
+      <UniqueIdentifier>{d8b3500c-adfd-4d7d-b6a1-7a6784e86f78}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -63,14 +69,17 @@
     <ClCompile Include="BruteForceDSP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FourierTransormTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SignalGenerators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DFTSpeedTest.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="FourierTransormTest.cpp">
+      <Filter>Source Files\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="PrecisionTest.cpp">
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,14 +122,17 @@
     <ClInclude Include="BruteForceDSP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FourierTransormTest.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SignalGenerators.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DFTSpeedTest.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="FourierTransormTest.h">
+      <Filter>Header Files\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="PrecisionTest.h">
+      <Filter>Header Files\Tests</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

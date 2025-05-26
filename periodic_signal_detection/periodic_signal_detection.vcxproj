@@ -153,6 +153,7 @@
     <ClCompile Include="DFTSpeedTest.cpp" />
     <ClCompile Include="FourierTransormTest.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PrecisionTest.cpp" />
     <ClCompile Include="SignalGenerators.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +172,7 @@
     <ClInclude Include="DSPWindow.h" />
     <ClInclude Include="FourierTransormTest.h" />
     <ClInclude Include="GuiHelpers.h" />
+    <ClInclude Include="PrecisionTest.h" />
     <ClInclude Include="SignalGenerators.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
